@@ -29,25 +29,56 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { PomodoroTimer } from "@/components/global/PomodoroTimer";
-import { getCurrentStreak } from "@/actions";
+import {
+  getCurrentStreak,
+  getQuizCount,
+  getFlashCardCount,
+  getUsersWithStreak,
+  getDigitalResouceCount,
+} from "@/actions";
+import { useParams } from "next/navigation";
 
+type leaderBoardType = {
+  name: string;
+  score: number;
+};
 export default function DashboardPage() {
   const [xp, setXp] = useState(750);
   const [level, setLevel] = useState(5);
-  const [streakScore, setStreakScore] = useState(0);
   const xpForNextLevel = 1000;
   const xpProgress = (xp / xpForNextLevel) * 100;
 
+  const [streakScore, setStreakScore] = useState<number>(0);
+  const [leaderBoard, setLeaderBoard] = useState<leaderBoardType[]>([]);
+
+  const [numOfdocx, setNumOfDocx] = useState<number | null>(null);
+  const [numOfQuiz, setNumOfQuiz] = useState<number | null>(null);
+  const [numOfFlash, setNumOfFlash] = useState<number | null>(null);
+
+  const { workspaceId } = useParams();
   useEffect(() => {
     const fetchStreak = async () => {
       const res = await getCurrentStreak();
       const streak = res?.daysCount;
 
+      const leaderBoardRes = await getUsersWithStreak(workspaceId as string);
+
+      const [docxCount, quizCount, flashCardCount] = await Promise.all([
+        getDigitalResouceCount(workspaceId as string),
+        getQuizCount(workspaceId as string),
+        getFlashCardCount(workspaceId as string),
+      ]);
+
+      setNumOfDocx(docxCount);
+      setNumOfQuiz(quizCount);
+      setNumOfFlash(flashCardCount);
+
+      setLeaderBoard(leaderBoardRes);
       setStreakScore(streak || 0);
     };
 
     fetchStreak();
-  }, []);
+  }, [workspaceId]);
 
   return (
     <div className="flex-1 overflow-auto p-4 md:p-6">
@@ -153,7 +184,7 @@ export default function DashboardPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">12</div>
+                  <div className="text-2xl font-bold">{numOfdocx || "..."}</div>
                   <p className="text-xs text-muted-foreground">
                     Documents in your library
                   </p>
@@ -181,7 +212,7 @@ export default function DashboardPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">5</div>
+                  <div className="text-2xl font-bold">{numOfQuiz || "..."}</div>
                   <p className="text-xs text-muted-foreground">
                     Quizzes created
                   </p>
@@ -211,7 +242,9 @@ export default function DashboardPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">8</div>
+                  <div className="text-2xl font-bold">
+                    {numOfFlash || "..."}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Flashcard sets
                   </p>
@@ -377,7 +410,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 text-white">
                         1
                       </div>
@@ -435,7 +468,42 @@ export default function DashboardPage() {
                         <Trophy className="h-3 w-3 text-amber-600 mr-1" />
                         680 pts
                       </div>
-                    </div>
+                    </div> */}
+
+                    {leaderBoard.map((item, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                            index + 1 === 1
+                              ? "bg-gradient-to-r from-yellow-400 to-amber-500 text-white"
+                              : index + 1 === 2
+                              ? "bg-gradient-to-r from-gray-300 to-gray-400 text-white"
+                              : index + 1 === 3
+                              ? "bg-gradient-to-r from-amber-600 to-amber-700 text-white"
+                              : "bg-gradient-to-r from-gray-300 to-gray-400 text-white"
+                          }`}
+                        >
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{item.name}</p>
+                        </div>
+                        <div className="font-medium flex items-center">
+                          <Trophy
+                            className={`h-3 w-3 mr-1 ${
+                              index + 1 === 1
+                                ? "text-yellow-500"
+                                : index + 1 === 2
+                                ? "text-gray-400"
+                                : index + 1 === 3
+                                ? "text-amber-600"
+                                : "text-zinc-500"
+                            }`}
+                          />
+                          {item.score} pts
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>

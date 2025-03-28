@@ -1571,24 +1571,92 @@ export async function getCurrentStreak() {
   const streak = await db.streak.findFirst({
     where: {
       userId,
+      current: true,
     },
     orderBy: {
       startDate: "desc", // Get the most recent streak
     },
   });
 
-  // If no streak is found, return null
-  if (!streak) return null;
+  // // If no streak is found, return null
+  // if (!streak) return null;
 
-  // Check if the streak is still active
-  const now = new Date();
-  const lastUpdated = new Date(streak.updatedAt);
-  const diffInHours =
-    (now.getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
+  // // Check if the streak is still active
+  // const now = new Date();
+  // const lastUpdated = new Date(streak.updatedAt);
+  // const diffInHours =
+  //   (now.getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
 
-  if (streak.endDate || diffInHours > 24) {
-    return null; // Streak has ended
-  }
+  // if (streak.endDate || diffInHours > 24) {
+  //   return null; // Streak has ended
+  // }
 
   return streak; // Return the active streak
 }
+
+export const getUsersWithStreak = async (id: string) => {
+  const res = await db.streak.findMany({
+    where: { workspaceId: id, current: true },
+    select: {
+      user: {
+        select: {
+          fullName: true,
+        },
+      },
+      daysCount: true,
+    },
+  });
+
+  const streak = res.map((streak) => ({
+    name: streak.user.fullName,
+    score: streak.daysCount * 100,
+  }));
+
+  return streak;
+};
+
+export const getDigitalResouceCount = async (
+  workspaceId: string
+): Promise<number> => {
+  try {
+    const count = await db.digitalResource.count({
+      where: {
+        workspaceId: workspaceId,
+      },
+    });
+    return count;
+  } catch (error) {
+    console.error("Error fetching digital resource count:", error);
+    throw new Error("Failed to fetch digital resource count");
+  }
+};
+
+export const getQuizCount = async (workspaceId: string): Promise<number> => {
+  try {
+    const count = await db.quiz.count({
+      where: {
+        workspaceId: workspaceId,
+      },
+    });
+    return count;
+  } catch (error) {
+    console.error("Error fetching quiz count:", error);
+    throw new Error("Failed to fetch quiz count");
+  }
+};
+
+export const getFlashCardCount = async (
+  workspaceId: string
+): Promise<number> => {
+  try {
+    const count = await db.flashcard.count({
+      where: {
+        workspaceId: workspaceId,
+      },
+    });
+    return count;
+  } catch (error) {
+    console.error("Error fetching flashcard count:", error);
+    throw new Error("Failed to fetch flashcard count");
+  }
+};
