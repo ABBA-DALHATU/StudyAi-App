@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { NotificationsDropdown } from "./notifications-dropdown";
 import { UserButton } from "@clerk/nextjs";
+import { ModeToggle } from "./ModeToggle";
 
 export function TopNavbar() {
   const { state, openMobile, setOpenMobile } = useSidebar();
@@ -44,6 +45,7 @@ export function TopNavbar() {
           />
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <ModeToggle />
           <NotificationsDropdown
             open={notificationsOpen}
             onOpenChange={setNotificationsOpen}
