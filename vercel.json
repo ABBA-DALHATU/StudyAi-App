@@ -1,0 +1,6 @@
+{
+  "buildCommand": "DISABLE_ESLINT_PLUGIN=true NEXT_DISABLE_ESLINT=1 next build",
+  "ignoreCommand": "eslint --quiet",
+  "installCommand": "npm install",
+  "devCommand": "next dev"
+}
