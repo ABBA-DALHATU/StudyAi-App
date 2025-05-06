@@ -1,6 +1,8 @@
 import { onAuthenticate } from "@/actions";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 const page = async () => {
   const response = await onAuthenticate();
 

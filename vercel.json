@@ -1,0 +1,20 @@
+{
+  "buildCommand": "chmod +x vercel-build.sh && ./vercel-build.sh",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "builds": [
+    {
+      "src": "next.config.mjs",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/auth/callback(.*)",
+      "dest": "/auth/callback",
+      "headers": {
+        "x-middleware-cache": "no-cache"
+      }
+    }
+  ]
+}
