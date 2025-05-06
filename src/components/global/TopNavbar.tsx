@@ -36,14 +36,14 @@ export function TopNavbar() {
           <SidebarTrigger />
         </div>
 
-        <div className="relative w-full max-w-sm md:max-w-md lg:max-w-lg">
+        {/* <div className="relative w-full max-w-sm md:max-w-md lg:max-w-lg">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search..."
             className="w-full pl-8 bg-background"
           />
-        </div>
+        </div> */}
         <div className="ml-auto flex items-center gap-2">
           <ModeToggle />
           <NotificationsDropdown

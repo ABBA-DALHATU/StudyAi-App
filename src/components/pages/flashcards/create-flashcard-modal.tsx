@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { createFlashcardSet, getDigitalResources } from "@/actions";
+import { createFlashcardSet, createNotification, getDigitalResources } from "@/actions";
 import { FlashcardContext } from "@/app/dashboard/[workspaceId]/flashcards/page";
 
 interface Resource {
@@ -175,6 +175,9 @@ export function CreateFlashcardModal({
           lastStudied: null, // Placeholder for last studied date
         };
         setFlashcardSets([newFlashcard, ...flashcardSets]);
+
+        // Notify the workspace
+        await createNotification(`A new flashcard was created by ${response.createdBy.fullName}`, response.createdBy.id, workspaceId);
 
         router.refresh();
       } else {

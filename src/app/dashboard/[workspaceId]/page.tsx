@@ -35,16 +35,28 @@ import {
   getFlashCardCount,
   getUsersWithStreak,
   getDigitalResouceCount,
+  getLatestNotifications,
 } from "@/actions";
 import { useParams } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
 
 type leaderBoardType = {
   name: string;
   score: number;
 };
+
+// Define an interface for the notification object
+interface Notification {
+  id: string;
+  content: string;
+  createdAt: Date;
+  workspaceId: string | null;
+  userId: string | null;
+}
+
 export default function DashboardPage() {
   const [xp, setXp] = useState(750);
-  const [level, setLevel] = useState(5);
+  // const [level, setLevel] = useState(5);
   const xpForNextLevel = 1000;
   const xpProgress = (xp / xpForNextLevel) * 100;
 
@@ -54,6 +66,11 @@ export default function DashboardPage() {
   const [numOfdocx, setNumOfDocx] = useState<number | null>(null);
   const [numOfQuiz, setNumOfQuiz] = useState<number | null>(null);
   const [numOfFlash, setNumOfFlash] = useState<number | null>(null);
+
+  // Use the interface to type the state
+  const [latestNotifications, setLatestNotifications] = useState<
+    Notification[]
+  >([]);
 
   const { workspaceId } = useParams();
   useEffect(() => {
@@ -77,7 +94,13 @@ export default function DashboardPage() {
       setStreakScore(streak || 0);
     };
 
+    const fetchLatestNotifications = async () => {
+      const notifications = await getLatestNotifications(workspaceId as string);
+      setLatestNotifications(notifications);
+    };
+
     fetchStreak();
+    fetchLatestNotifications();
   }, [workspaceId]);
 
   return (
@@ -96,7 +119,7 @@ export default function DashboardPage() {
             <div className="flex flex-col items-center justify-center">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-bold">{level}</span>
+                  <span className="text-sm font-bold">{streakScore}</span>
                 </div>
                 <svg className="h-12 w-12 transform -rotate-90">
                   <circle
@@ -117,7 +140,7 @@ export default function DashboardPage() {
                     stroke="currentColor"
                     strokeWidth="3"
                     strokeLinecap="round"
-                    strokeDasharray={`${xpProgress * 1.256} 126`}
+                    // strokeDasharray={`${xpProgress * 1.256} 126`}
                     className="text-primary"
                   />
                 </svg>
@@ -125,20 +148,24 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium">Level {level} Scholar</p>
+                <p className="text-sm font-medium">
+                  Level {streakScore} Scholar
+                </p>
                 <Badge
                   variant="outline"
                   className="bg-primary/10 text-primary border-primary/20"
                 >
                   <Zap className="h-3 w-3 mr-1" />
-                  {xp} XP
+                  {/* {xp} XP */}
+                  {streakScore * 100} PTS
                 </Badge>
               </div>
               <div className="w-full mt-1">
                 <Progress value={xpProgress} className="h-2" />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {xpForNextLevel - xp} XP until Level {level + 1}
+                {/* {xpForNextLevel - xp} XP until Level {streakScore + 1} */}
+                Few more to go until Level {streakScore + 1}
               </p>
             </div>
           </div>
@@ -158,7 +185,7 @@ export default function DashboardPage() {
             >
               Pomodoro
             </TabsTrigger>
-            <TabsTrigger
+            {/* <TabsTrigger
               value="achievements"
               className="data-[state=active]:bg-background"
             >
@@ -169,7 +196,7 @@ export default function DashboardPage() {
               className="data-[state=active]:bg-background"
             >
               Statistics
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -196,7 +223,7 @@ export default function DashboardPage() {
                     className="w-full group"
                     asChild
                   >
-                    <a href="/library">
+                    <a href={`/dashboard/${workspaceId}/library`}>
                       <Plus className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform" />
                       Add Document
                     </a>
@@ -224,7 +251,7 @@ export default function DashboardPage() {
                     className="w-full group"
                     asChild
                   >
-                    <a href="/quizzes">
+                    <a href={`/dashboard/${workspaceId}/quizzes`}>
                       <Plus className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform" />
                       Create Quiz
                     </a>
@@ -256,7 +283,7 @@ export default function DashboardPage() {
                     className="w-full group"
                     asChild
                   >
-                    <a href="/flashcards">
+                    <a href={`/dashboard/${workspaceId}/flashcards`}>
                       <Plus className="mr-2 h-4 w-4 group-hover:rotate-90 transition-transform" />
                       Create Flashcards
                     </a>
@@ -297,6 +324,42 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  <div className="space-y-4">
+                    {latestNotifications.map((notification) => (
+                      <div
+                        className="flex items-center gap-4"
+                        key={notification.id}
+                      >
+                        <div className="rounded-full bg-green-500/10 p-2">
+                          <FileText className="h-4 w-4 text-green-500" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium">
+                              {notification.content}
+                            </p>
+                            <Badge
+                              variant="outline"
+                              className="bg-green-500/10 text-green-500 border-green-500/20"
+                            >
+                              TRUE
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Notification
+                          </p>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(
+                            new Date(notification.createdAt),
+                            { addSuffix: true }
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+                {/* <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
                       <div className="rounded-full bg-green-500/10 p-2">
@@ -398,7 +461,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
+                </CardContent> */}
               </Card>
 
               <Card className="shadow-sm hover:shadow-md transition-shadow">
@@ -408,68 +471,9 @@ export default function DashboardPage() {
                     Top performers in your workspaces
                   </CardDescription>
                 </CardHeader>
+
                 <CardContent>
                   <div className="space-y-4">
-                    {/* <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 text-white">
-                        1
-                      </div>
-                      <Avatar className="h-8 w-8 ring-2 ring-yellow-400">
-                        <AvatarImage
-                          src="/placeholder.svg?height=32&width=32"
-                          alt="User"
-                        />
-                        <AvatarFallback>JD</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Jane Doe</p>
-                      </div>
-                      <div className="font-medium flex items-center">
-                        <Trophy className="h-3 w-3 text-yellow-500 mr-1" />
-                        850 pts
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-gray-300 to-gray-400 text-white">
-                        2
-                      </div>
-                      <Avatar className="h-8 w-8 ring-2 ring-gray-300">
-                        <AvatarImage
-                          src="/placeholder.svg?height=32&width=32"
-                          alt="User"
-                        />
-                        <AvatarFallback>JS</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">John Smith</p>
-                      </div>
-                      <div className="font-medium flex items-center">
-                        <Trophy className="h-3 w-3 text-gray-400 mr-1" />
-                        720 pts
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-amber-600 to-amber-700 text-white">
-                        3
-                      </div>
-                      <Avatar className="h-8 w-8 ring-2 ring-amber-600">
-                        <AvatarImage
-                          src="/placeholder.svg?height=32&width=32"
-                          alt="User"
-                        />
-                        <AvatarFallback>AT</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Alex Taylor</p>
-                      </div>
-                      <div className="font-medium flex items-center">
-                        <Trophy className="h-3 w-3 text-amber-600 mr-1" />
-                        680 pts
-                      </div>
-                    </div> */}
-
                     {leaderBoard.map((item, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <div

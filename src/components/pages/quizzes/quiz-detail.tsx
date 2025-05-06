@@ -153,8 +153,9 @@ export function QuizDetail({ id, workspaceId }: QuizDetailProps) {
   if (loading || !quiz) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 /> {/* Replace with your loading spinner component */}
-      </div>
+      <Loader2 className="animate-spin" />{" "}
+      {/* Replace with your loading spinner */}
+    </div>
     );
   }
 
@@ -162,13 +163,13 @@ export function QuizDetail({ id, workspaceId }: QuizDetailProps) {
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-          <Link href="/quizzes">
+          <Link href={`/dashboard/${workspaceId}/quizzes`}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back to quizzes</span>
           </Link>
         </Button>
         <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link href="/quizzes" className="hover:text-foreground">
+          <Link href={`/dashboard/${workspaceId}/quizzes`} className="hover:text-foreground">
             Quizzes
           </Link>
           <span>/</span>

@@ -32,7 +32,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { createQuiz, getDigitalResources } from "@/actions";
+import { createQuiz, getDigitalResources, createNotification } from "@/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { getUserbyClerkId } from "@/actions";
@@ -229,7 +229,7 @@ export function CreateQuizModal({
 
       if (response) {
         toast("Success!", {
-          description: "File uploaded successfully.",
+          description: "Quiz created successfully.",
           duration: 3000,
         });
 
@@ -282,6 +282,7 @@ export function CreateQuizModal({
         };
 
         setQuizzes([newQuiz, ...quizzes]);
+        await createNotification(`A new quiz was created by ${response.createdBy.fullName}`, response.createdBy.id, workspaceId);
         router.refresh();
       } else {
         toast.error("Could not upload file.", {

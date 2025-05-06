@@ -7,7 +7,7 @@ import { WebsiteTestimonials } from "@/components/pages/website/website-testimon
 
 export default function WebsitePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/95">
+    <div className="min-h-screen w-full bg-gradient-to-b from-background to-background/95 overflow-x-hidden">
       <WebsiteHeader />
       <main>
         <WebsiteHero />

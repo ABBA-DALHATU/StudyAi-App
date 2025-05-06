@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DigitalResource } from "./digital-library";
+import Link from "next/link";
 
 interface ResourceCardProps {
   resource: DigitalResource;
@@ -100,6 +101,24 @@ export function ResourceCard({
     e.stopPropagation();
     // In a real app, this would download the file
     console.log(`Downloading ${resource.name}`);
+
+    const handleDownloadClick = async () => {
+      try {
+        const response = await fetch(resource.url);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', resource.name);
+        document.body.appendChild(link);
+        link.click();
+        link?.parentNode?.removeChild(link);
+      } catch (error) {
+        console.error('Error downloading file:', error);
+      }
+    };
+handleDownloadClick()
+
   };
 
   return (
@@ -127,8 +146,10 @@ export function ResourceCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleDownload}>
+                {/* <Link href={resource.url} className="flex"> */}
                 <Download className="mr-2 h-4 w-4" />
                 Download
+                {/* </Link> */}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={(e) => {
@@ -182,6 +203,7 @@ export function ResourceCard({
           </Avatar>
           <span className="text-xs truncate">{resource.uploadedByName}</span>
         </div>
+        
         <Button
           variant="ghost"
           size="icon"
@@ -190,8 +212,10 @@ export function ResourceCard({
           } transition-opacity`}
           onClick={handleDownload}
         >
+            {/* <Link href={resource.url} className="flex"> */}
           <Download className="h-4 w-4" />
           <span className="sr-only">Download</span>
+            {/* </Link> */}
         </Button>
       </CardFooter>
     </Card>

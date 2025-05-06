@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { getFlashcardSet } from "@/actions";
 import LoaderFetch from "@/components/global/LoaderFetch";
+import { useParams } from "next/navigation";
 
 type Flashcard = {
   id: string;
@@ -71,6 +72,7 @@ export function FlashcardStudy({ id }: FlashcardStudyProps) {
   const [timeSpent, setTimeSpent] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const {workspaceId} = useParams()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -209,17 +211,17 @@ export function FlashcardStudy({ id }: FlashcardStudyProps) {
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-          <Link href={`/flashcards/${id}`}>
+          <Link href={`/dashboard/${workspaceId}/flashcards/${id}`}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back to flashcard set</span>
           </Link>
         </Button>
         <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link href="/flashcards" className="hover:text-foreground">
+          <Link href={`/dashboard/${workspaceId}/flashcards`} className="hover:text-foreground">
             Flashcards
           </Link>
           <span>/</span>
-          <Link href={`/flashcards/${id}`} className="hover:text-foreground">
+          <Link href={`/dashboard/${workspaceId}/flashcards/${id}`} className="hover:text-foreground">
             {flashcardSet.title}
           </Link>
           <span>/</span>
@@ -578,7 +580,7 @@ export function FlashcardStudy({ id }: FlashcardStudyProps) {
               asChild
               className="sm:flex-1 bg-amber-500 hover:bg-amber-600 text-white"
             >
-              <Link href={`/flashcards/${id}`}>Back to Flashcard Set</Link>
+              <Link href={`/dashboard/${workspaceId}/flashcards/${id}`}>Back to Flashcard Set</Link>
             </Button>
           </DialogFooter>
         </DialogContent>

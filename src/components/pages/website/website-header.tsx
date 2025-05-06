@@ -27,12 +27,10 @@ export function WebsiteHeader() {
   return (
     <header
       className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        scrolled
-          ? "bg-background/95 backdrop-blur-md shadow-sm"
-          : "bg-transparent"
+        scrolled ? "bg-background/95 backdrop-blur-md shadow-sm" : "bg-transparent"
       }`}
     >
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container mx-auto w-full max-w-[1400px] px-4 sm:px-6 flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-500">
             <svg
@@ -58,10 +56,7 @@ export function WebsiteHeader() {
         </div>
 
         <nav className="hidden md:flex items-center gap-8">
-          <Link
-            href="#features"
-            className="text-sm font-medium hover:text-primary transition-colors"
-          >
+          <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">
             Features
           </Link>
 
@@ -91,10 +86,7 @@ export function WebsiteHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Link
-            href="#pricing"
-            className="text-sm font-medium hover:text-primary transition-colors"
-          >
+          <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
             Pricing
           </Link>
 
@@ -124,32 +116,24 @@ export function WebsiteHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Link
-            href="#about"
-            className="text-sm font-medium hover:text-primary transition-colors"
-          >
+          <Link href="#about" className="text-sm font-medium hover:text-primary transition-colors">
             About
           </Link>
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
           <Button variant="ghost" asChild>
-            <Link href="/auth/sign-in">Log in</Link>
+            <Link href="auth/sign-in">Log in</Link>
           </Button>
           <Button
             asChild
             className="bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 text-white"
           >
-            <Link href="/auth/sign-in">Sign up free</Link>
+            <Link href="auth/sign-in">Sign up free</Link>
           </Button>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={() => setMobileMenuOpen(true)}
-        >
+        <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(true)}>
           <Menu className="h-6 w-6" />
           <span className="sr-only">Open menu</span>
         </Button>
@@ -180,11 +164,7 @@ export function WebsiteHeader() {
                         StudyAI
                       </span>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
                       <X className="h-6 w-6" />
                       <span className="sr-only">Close menu</span>
                     </Button>
@@ -268,21 +248,12 @@ export function WebsiteHeader() {
 
                   <div className="flex flex-col gap-2">
                     <Button variant="outline" asChild className="w-full">
-                      <Link
-                        href="/auth/sign-in"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
+                      <Link href="/" onClick={() => setMobileMenuOpen(false)}>
                         Log in
                       </Link>
                     </Button>
-                    <Button
-                      asChild
-                      className="w-full bg-gradient-to-r from-primary to-purple-500"
-                    >
-                      <Link
-                        href="/auth/sign-in"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
+                    <Button asChild className="w-full bg-gradient-to-r from-primary to-purple-500">
+                      <Link href="/" onClick={() => setMobileMenuOpen(false)}>
                         Sign up free
                       </Link>
                     </Button>
@@ -294,5 +265,5 @@ export function WebsiteHeader() {
         )}
       </div>
     </header>
-  );
+  )
 }

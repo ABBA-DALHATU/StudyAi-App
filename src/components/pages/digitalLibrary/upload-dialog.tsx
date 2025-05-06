@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import FileUpload from "@/components/global/uploadFile";
-import { createDigitalResource } from "@/actions";
+import { createDigitalResource, createNotification } from "@/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -98,6 +98,7 @@ export function UploadDialog({
         // Call onUpload to update UI immediately
         onUpload(response);
         setData(null);
+        await createNotification(`A new digital resource was uploaded by ${response.uploadedBy.fullName}`, response.uploadedById, workspaceId);
         router.refresh();
       } else {
         toast.error("couldnot upload file.", {

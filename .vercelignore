@@ -1,0 +1,6 @@
+# TypeScript configuration
+tsconfig.json
+*.d.ts
+
+# ESLint configuration
+.eslintrc*

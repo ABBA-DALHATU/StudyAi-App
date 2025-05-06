@@ -13,6 +13,198 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id            String   @id @default(uuid())
+  clerkId       String   @unique
+  email         String   @unique
+  fullName      String
+  firstName     String
+  lastName      String
+  imageUrl      String?
+  createdAt     DateTime @default(now())
+
+  workspaces        Workspace[]      // One-to-many (user owns workspaces)
+  quizzes           Quiz[]
+  flashcards        Flashcard[]
+  userWorkspaces    UserWorkspaceMembership[]
+  digitalResources  DigitalResource[]
+  leaderboardEntries LeaderboardEntry[]
+  quizAttempt       QuizAttempt[]
+  notifications     Notification[]
+  streaks           Streak[]
+  pomodoroSessions  Session[]
+  preferences       Preferences?
+
+  sender            Invite[] @relation("sender")
+  reciever          Invite[] @relation("reciever")
+}
+
+model Workspace {
+  id          String   @id @default(uuid())
+  name        String
+  type        WorkspaceType @default(PRIVATE)
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members     UserWorkspaceMembership[]
+  digitalLibrary DigitalResource[]
+  quizzes     Quiz[]
+  flashcards  Flashcard[]
+  leaderboard Leaderboard?
+  streaks     Streak[]
+  pomodoroSessions Session[]
+  createdAt   DateTime @default(now())
+  invites     Invite[]
+  notifications Notification[]
+}
+
+model UserWorkspaceMembership {
+  id          String @id @default(uuid())
+  member      Boolean @default(true)
+  userId      String
+  workspaceId String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  role        Role    @default(MEMBER)
+}
+
+model Notification {
+  id          String @id @default(uuid())
+  content     String
+  userId      String?
+  user        User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  createdAt        DateTime @default(now())
+
+}
+
+model Invite {
+  id         String  @id @default(uuid())
+  accepted   Boolean @default(false)
+
+  senderId   String?
+  sender     User?   @relation("sender", fields: [senderId], references: [id], onDelete: SetNull)
+
+  recieverId String?
+  reciever   User?   @relation("reciever", fields: [recieverId], references: [id], onDelete: SetNull)
+
+  content     String
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model DigitalResource {
+  id               String   @id @default(uuid())
+  name             String
+  url              String
+  size             Int
+  type             String
+  workspaceId      String
+  uploadedById     String
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  uploadedBy       User     @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  quizzesAttached  Quiz[]
+  flashcardsAttached Flashcard[]
+  createdAt        DateTime @default(now())
+}
+
+model Quiz {
+  id               String   @id @default(uuid())
+  title            String
+  numOfQuestions   Int      @default(10)
+  difficulty       Difficulty @default(EASY)
+  digitalResourceId String?
+  digitalResource  DigitalResource? @relation(fields: [digitalResourceId], references: [id], onDelete: SetNull)
+  jsonData         Json
+  createdById      String
+  createdBy        User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  workspaceId      String
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  attempts         QuizAttempt[]
+  createdAt        DateTime @default(now())
+}
+
+model QuizAttempt {
+  id        String  @id @default(uuid())
+  userId    String
+  quizId    String
+  timeSpent Int     @default(0)
+  score     Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+model Flashcard {
+  id               String   @id @default(uuid())
+  title            String
+  numOfCards       Int
+  digitalResourceId String?
+  digitalResource  DigitalResource? @relation(fields: [digitalResourceId], references: [id], onDelete: SetNull)
+  jsonData         Json
+  createdById      String
+  createdBy        User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  workspaceId      String
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+}
+
+model Leaderboard {
+  id           String   @id @default(uuid())
+  workspaceId  String   @unique
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  scores       LeaderboardEntry[]
+  updatedAt    DateTime @updatedAt
+}
+
+model LeaderboardEntry {
+  id            String   @id @default(uuid())
+  userId        String
+  leaderboardId String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaderboard   Leaderboard @relation(fields: [leaderboardId], references: [id], onDelete: Cascade)
+  score         Int      @default(0)
+
+  @@unique([userId, leaderboardId])
+}
+
+model Streak {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate   DateTime
+  endDate     DateTime?
+  updatedAt   DateTime @updatedAt
+  current     Boolean  @default(false)
+  daysCount   Int
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  userId      String
+  workspaceId String?
+  duration    Int
+  type        SessionType @default(FOCUS)
+  completed   Boolean   @default(true)
+  xpEarned    Int       @default(15)
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model Preferences {
+  id                     String @id @default(cuid())
+  userId                 String @unique
+  user                   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  focusDuration          Int    @default(25)
+  shortBreakDuration     Int    @default(5)
+  longBreakDuration      Int    @default(15)
+  sessionsBeforeLongBreak Int   @default(4)
+}
+
 enum Role {
   OWNER
   MEMBER
@@ -23,231 +215,10 @@ enum WorkspaceType {
   PRIVATE
 }
 
-model User {
-  id            String   @id @default(uuid())
-  clerkId       String   @unique
-  email         String   @unique
-  fullName String
-  firstName String
-  lastName String
-  imageUrl String?
-  createdAt     DateTime @default(now())
-  workspaces    Workspace[]  // One user can have multiple workspaces
-  quizzes       Quiz[]       // User-created quizzes
-  flashcards    Flashcard[]  // User-created flashcards
-
-  userWorkspaces UserWorkspaceMembership[]
-  digitalResources DigitalResource[]
-  leaderboardEntries LeaderboardEntry[]
-  quizAttempt QuizAttempt[]
-  notifications Notification[]
-
-  streaks       Streak[]
-  pomodoroSessions Session[] // User's Pomodoro sessions
-  preferences Preferences?
-
-
-
-  sender        Invite[]       @relation("sender")
-  reciever      Invite[]       @relation("reciever")
-}
-
-model Workspace {
-  id            String   @id @default(uuid())
-  name          String
-  type          WorkspaceType @default(PRIVATE)
-  ownerId       String
-  owner         User     @relation(fields: [ownerId], references: [id])
-  members         UserWorkspaceMembership[] // Many-to-many for public workspaces
-  digitalLibrary DigitalResource[]
-  quizzes       Quiz[]
-  flashcards    Flashcard[]
-  leaderboard   Leaderboard?
-  streaks       Streak[]
-  pomodoroSessions Session[] // Workspace-related Pomodoro sessions
-  createdAt     DateTime @default(now())
-
-  invites Invite[]
-}
-
-model UserWorkspaceMembership {
-  id          String @id @default(uuid())
-   member      Boolean    @default(true)
-  userId      String
-  workspaceId String
-  user        User     @relation(fields: [userId], references: [id])
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  role        Role    @default(MEMBER) // Owner, Member
-}
-
-
-
-
-model Notification {
-  id      String @id @default(uuid())
-  content String
-
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
-}
-
-model Invite {
-  id       String  @id @default(uuid())
-  accepted Boolean @default(false)
-
-  sender      User?      @relation("sender", fields: [senderId], references: [id])
-  senderId    String?   
-  reciever    User?      @relation("reciever", fields: [recieverId], references: [id])
-  recieverId  String?    
-  content     String
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
-  workspaceId String?    
-}
-
-
-model DigitalResource {
-  id          String   @id @default(uuid())
-  name        String
-  url         String   // Could be file storage link (S3, Supabase, etc.)
-  size Int
-  type String
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  uploadedBy  User     @relation(fields: [uploadedById], references: [id])
-  uploadedById String
-  quizzesAttached Quiz[]
-  flashcardsAttached Flashcard[]
-  createdAt   DateTime @default(now())
-}
-
 enum Difficulty {
   EASY
   MEDIUM
   HARD
-}
-
-model Quiz {
-  id             String   @id @default(uuid())
-  title          String
-  numOfQuestions Int      @default(10)
-  difficulty     Difficulty @default(EASY)
-  // sourceDocument String
-  digitalResourceId String?
-  digitalResource DigitalResource? @relation(fields: [digitalResourceId], references: [id])
-  jsonData       Json     // Store OpenAI JSON response directly
-  createdById    String
-  createdBy      User     @relation(fields: [createdById], references: [id])
-  workspaceId    String
-  workspace      Workspace @relation(fields: [workspaceId], references: [id])
-  attempts       QuizAttempt[] // Relationship to track quiz attempts
-  createdAt      DateTime @default(now())
-}
-
-model QuizAttempt {
-  id        String  @id @default(uuid())
-  userId    String
-  user      User    @relation(fields: [userId], references: [id])
-  quizId    String
-  quiz      Quiz    @relation(fields: [quizId], references: [id])
-  timeSpent Int     @default(0) 
-  score     Int
-  createdAt DateTime @default(now())
-}
-
-
-
-model Flashcard {
-  id          String   @id @default(uuid())
-  title       String
-  numOfCards Int
-  digitalResourceId String?
-  digitalResource DigitalResource? @relation(fields: [digitalResourceId], references: [id])
-  jsonData    Json
-  createdById String
-  createdBy   User     @relation(fields: [createdById], references: [id])
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  createdAt   DateTime @default(now())
-}
-
-model Leaderboard {
-  id           String   @id @default(uuid())
-  workspaceId  String   @unique
-  workspace    Workspace @relation(fields: [workspaceId], references: [id])
-  scores       LeaderboardEntry[]
-  updatedAt    DateTime @updatedAt
-}
-
-model LeaderboardEntry {
-  id          String   @id @default(uuid())
-  userId      String
-  leaderboardId String
-  user        User     @relation(fields: [userId], references: [id])
-  leaderboard Leaderboard @relation(fields: [leaderboardId], references: [id])
-  score       Int      @default(0)
-
-  @@unique([userId, leaderboardId]) // Ensures a user can't have multiple entries per leaderboard
-}
-
-// model Streak {
-//   id          String   @id @default(uuid())
-//   userId      String
-//   user        User     @relation(fields: [userId], references: [id])
-//   workspaceId String
-//   workspace   Workspace @relation(fields: [workspaceId], references: [id])
-//   count       Int      @default(0)
-//   lastUpdated DateTime @default(now())
-// }
-
-// model PomodoroSession {
-//   id          String   @id @default(uuid())
-//   userId      String
-//   user        User     @relation(fields: [userId], references: [id])
-//   workspaceId String?  // Optional: If sessions are tied to a workspace
-//   workspace   Workspace? @relation(fields: [workspaceId], references: [id])
-//   duration    Int      // Session duration in minutes (e.g., 25 for a standard Pomodoro)
-//   breakTime   Int      // Break duration in minutes (e.g., 5 for a short break)
-//   completed   Boolean  @default(false) // Whether the session was completed
-//   createdAt   DateTime @default(now())
-// }
-
-
-
-
-model Session {
-  id          String    @id @default(cuid())
-  createdAt   DateTime  @default(now())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-  duration    Int       // in minutes
-  type        SessionType @default(FOCUS)
-  completed   Boolean   @default(true)
-  xpEarned    Int       @default(15) // XP per session
-    workspaceId String?  // Optional: If sessions are tied to a workspace
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
-}
-
-model Preferences {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-  user        User      @relation(fields: [userId], references: [id])
-  focusDuration Int     @default(25)
-  shortBreakDuration Int @default(5)
-  longBreakDuration Int  @default(15)
-  sessionsBeforeLongBreak Int @default(4)
-}
-
-model Streak {
-  id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-  startDate   DateTime
-  endDate     DateTime?
-   updatedAt   DateTime   @updatedAt  // ✅ Auto-updates on modifications
-  current     Boolean   @default(false)
-  daysCount   Int
-  workspaceId String?  // Optional: If sessions are tied to a workspace
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id])
 }
 
 enum SessionType {
@@ -255,3 +226,238 @@ enum SessionType {
   SHORT_BREAK
   LONG_BREAK
 }
+
+
+
+// model User {
+//   id            String   @id @default(uuid())
+//   clerkId       String   @unique
+//   email         String   @unique
+//   fullName String
+//   firstName String
+//   lastName String
+//   imageUrl String?
+//   createdAt     DateTime @default(now())
+//   workspaces    Workspace[]  // One user can have multiple workspaces
+//   quizzes       Quiz[]       // User-created quizzes
+//   flashcards    Flashcard[]  // User-created flashcards
+
+//   userWorkspaces UserWorkspaceMembership[]
+//   digitalResources DigitalResource[]
+//   leaderboardEntries LeaderboardEntry[]
+//   quizAttempt QuizAttempt[]
+//   notifications Notification[]
+
+//   streaks       Streak[]
+//   pomodoroSessions Session[] // User's Pomodoro sessions
+//   preferences Preferences?
+
+
+
+//   sender        Invite[]       @relation("sender")
+//   reciever      Invite[]       @relation("reciever")
+// }
+
+// model Workspace {
+//   id            String   @id @default(uuid())
+//   name          String
+//   type          WorkspaceType @default(PRIVATE)
+//   ownerId       String
+//   owner         User     @relation(fields: [ownerId], references: [id])
+//   members         UserWorkspaceMembership[] // Many-to-many for public workspaces
+//   digitalLibrary DigitalResource[]
+//   quizzes       Quiz[]
+//   flashcards    Flashcard[]
+//   leaderboard   Leaderboard?
+//   streaks       Streak[]
+//   pomodoroSessions Session[] // Workspace-related Pomodoro sessions
+//   createdAt     DateTime @default(now())
+
+//   invites Invite[]
+// }
+
+// model UserWorkspaceMembership {
+//   id          String @id @default(uuid())
+//    member      Boolean    @default(true)
+//   userId      String
+//   workspaceId String
+//   user        User     @relation(fields: [userId], references: [id])
+//   workspace   Workspace @relation(fields: [workspaceId], references: [id])
+//   role        Role    @default(MEMBER) // Owner, Member
+// }
+
+
+
+
+// model Notification {
+//   id      String @id @default(uuid())
+//   content String
+
+//   user   User?   @relation(fields: [userId], references: [id])
+//   userId String?
+// }
+
+// model Invite {
+//   id       String  @id @default(uuid())
+//   accepted Boolean @default(false)
+
+//   sender      User?      @relation("sender", fields: [senderId], references: [id])
+//   senderId    String?   
+//   reciever    User?      @relation("reciever", fields: [recieverId], references: [id])
+//   recieverId  String?    
+//   content     String
+//   workspace   Workspace? @relation(fields: [workspaceId], references: [id])
+//   workspaceId String?    
+// }
+
+
+// model DigitalResource {
+//   id          String   @id @default(uuid())
+//   name        String
+//   url         String   // Could be file storage link (S3, Supabase, etc.)
+//   size Int
+//   type String
+//   workspaceId String
+//   workspace   Workspace @relation(fields: [workspaceId], references: [id])
+//   uploadedBy  User     @relation(fields: [uploadedById], references: [id])
+//   uploadedById String
+//   quizzesAttached Quiz[]
+//   flashcardsAttached Flashcard[]
+//   createdAt   DateTime @default(now())
+// }
+
+// enum Difficulty {
+//   EASY
+//   MEDIUM
+//   HARD
+// }
+
+// model Quiz {
+//   id             String   @id @default(uuid())
+//   title          String
+//   numOfQuestions Int      @default(10)
+//   difficulty     Difficulty @default(EASY)
+//   // sourceDocument String
+//   digitalResourceId String?
+//   digitalResource DigitalResource? @relation(fields: [digitalResourceId], references: [id])
+//   jsonData       Json     // Store OpenAI JSON response directly
+//   createdById    String
+//   createdBy      User     @relation(fields: [createdById], references: [id])
+//   workspaceId    String
+//   workspace      Workspace @relation(fields: [workspaceId], references: [id])
+//   attempts       QuizAttempt[] // Relationship to track quiz attempts
+//   createdAt      DateTime @default(now())
+// }
+
+// model QuizAttempt {
+//   id        String  @id @default(uuid())
+//   userId    String
+//   user      User    @relation(fields: [userId], references: [id])
+//   quizId    String
+//   quiz      Quiz    @relation(fields: [quizId], references: [id])
+//   timeSpent Int     @default(0) 
+//   score     Int
+//   createdAt DateTime @default(now())
+// }
+
+
+
+// model Flashcard {
+//   id          String   @id @default(uuid())
+//   title       String
+//   numOfCards Int
+//   digitalResourceId String?
+//   digitalResource DigitalResource? @relation(fields: [digitalResourceId], references: [id])
+//   jsonData    Json
+//   createdById String
+//   createdBy   User     @relation(fields: [createdById], references: [id])
+//   workspaceId String
+//   workspace   Workspace @relation(fields: [workspaceId], references: [id])
+//   createdAt   DateTime @default(now())
+// }
+
+// model Leaderboard {
+//   id           String   @id @default(uuid())
+//   workspaceId  String   @unique
+//   workspace    Workspace @relation(fields: [workspaceId], references: [id])
+//   scores       LeaderboardEntry[]
+//   updatedAt    DateTime @updatedAt
+// }
+
+// model LeaderboardEntry {
+//   id          String   @id @default(uuid())
+//   userId      String
+//   leaderboardId String
+//   user        User     @relation(fields: [userId], references: [id])
+//   leaderboard Leaderboard @relation(fields: [leaderboardId], references: [id])
+//   score       Int      @default(0)
+
+//   @@unique([userId, leaderboardId]) // Ensures a user can't have multiple entries per leaderboard
+// }
+
+// // model Streak {
+// //   id          String   @id @default(uuid())
+// //   userId      String
+// //   user        User     @relation(fields: [userId], references: [id])
+// //   workspaceId String
+// //   workspace   Workspace @relation(fields: [workspaceId], references: [id])
+// //   count       Int      @default(0)
+// //   lastUpdated DateTime @default(now())
+// // }
+
+// // model PomodoroSession {
+// //   id          String   @id @default(uuid())
+// //   userId      String
+// //   user        User     @relation(fields: [userId], references: [id])
+// //   workspaceId String?  // Optional: If sessions are tied to a workspace
+// //   workspace   Workspace? @relation(fields: [workspaceId], references: [id])
+// //   duration    Int      // Session duration in minutes (e.g., 25 for a standard Pomodoro)
+// //   breakTime   Int      // Break duration in minutes (e.g., 5 for a short break)
+// //   completed   Boolean  @default(false) // Whether the session was completed
+// //   createdAt   DateTime @default(now())
+// // }
+
+
+
+
+// model Session {
+//   id          String    @id @default(cuid())
+//   createdAt   DateTime  @default(now())
+//   userId      String
+//   user        User      @relation(fields: [userId], references: [id])
+//   duration    Int       // in minutes
+//   type        SessionType @default(FOCUS)
+//   completed   Boolean   @default(true)
+//   xpEarned    Int       @default(15) // XP per session
+//     workspaceId String?  // Optional: If sessions are tied to a workspace
+//   workspace   Workspace? @relation(fields: [workspaceId], references: [id])
+// }
+
+// model Preferences {
+//   id          String    @id @default(cuid())
+//   userId      String    @unique
+//   user        User      @relation(fields: [userId], references: [id])
+//   focusDuration Int     @default(25)
+//   shortBreakDuration Int @default(5)
+//   longBreakDuration Int  @default(15)
+//   sessionsBeforeLongBreak Int @default(4)
+// }
+
+// model Streak {
+//   id          String    @id @default(cuid())
+//   userId      String
+//   user        User      @relation(fields: [userId], references: [id])
+//   startDate   DateTime
+//   endDate     DateTime?
+//    updatedAt   DateTime   @updatedAt  // ✅ Auto-updates on modifications
+//   current     Boolean   @default(false)
+//   daysCount   Int
+//   workspaceId String?  // Optional: If sessions are tied to a workspace
+//   workspace   Workspace? @relation(fields: [workspaceId], references: [id])
+// }
+
+// enum SessionType {
+//   FOCUS
+//   SHORT_BREAK
+//   LONG_BREAK
+// }

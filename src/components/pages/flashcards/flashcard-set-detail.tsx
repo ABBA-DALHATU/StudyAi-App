@@ -209,13 +209,13 @@ export function FlashcardSetDetail({
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-          <Link href="/flashcards">
+          <Link href={`/dashboard/${workspaceId}/flashcards`}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back to flashcards</span>
           </Link>
         </Button>
         <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link href="/flashcards" className="hover:text-foreground">
+          <Link href={`/dashboard/${workspaceId}/flashcards`} className="hover:text-foreground">
             Flashcards
           </Link>
           <span>/</span>
@@ -507,7 +507,7 @@ export function FlashcardSetDetail({
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">Actions</CardTitle>
             </CardHeader>
@@ -530,7 +530,7 @@ export function FlashcardSetDetail({
                 </Button>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </div>
     </div>

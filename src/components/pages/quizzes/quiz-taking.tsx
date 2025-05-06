@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getQuizWithQuestions, submitQuizAttempt } from "@/actions";
+import { useParams } from "next/navigation";
 
 // types/quiz.ts
 interface Question {
@@ -168,6 +169,8 @@ export function QuizTaking({ id }: QuizTakingProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
+
+  const {workspaceId} = useParams()
 
   // Fetch quiz data
   useEffect(() => {
@@ -323,17 +326,17 @@ export function QuizTaking({ id }: QuizTakingProps) {
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-          <Link href={`/quizzes/${id}`}>
+          <Link href={`/dashboard/${workspaceId}/quizzes/${id}`}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back to quiz</span>
           </Link>
         </Button>
         <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link href="/quizzes" className="hover:text-foreground">
+          <Link href={`/dashboard/${workspaceId}/quizzes`} className="hover:text-foreground">
             Quizzes
           </Link>
           <span>/</span>
-          <Link href={`/quizzes/${id}`} className="hover:text-foreground">
+          <Link href={`/dashboard/${workspaceId}/quizzes/${id}`} className="hover:text-foreground">
             {quiz.title}
           </Link>
           <span>/</span>
@@ -701,7 +704,7 @@ export function QuizTaking({ id }: QuizTakingProps) {
               asChild
               className="sm:flex-1 bg-green-500 hover:bg-green-600 text-white"
             >
-              <Link href={`/quizzes/${id}`}>Back to Quiz</Link>
+              <Link href={`/dashboard/${workspaceId}/quizzes/${id}`}>Back to Quiz</Link>
             </Button>
           </DialogFooter>
         </DialogContent>

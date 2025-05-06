@@ -4,6 +4,9 @@ import { db } from "@/lib/prismaClient";
 import { currentUser } from "@clerk/nextjs/server";
 import { Difficulty } from "@prisma/client";
 import nodemailer from "nodemailer";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export const onAuthenticate = async () => {
   try {
@@ -1029,6 +1032,7 @@ export const inviteMember = async (
             notifications: {
               create: {
                 content: `${authUser.firstName} ${authUser.lastName} invited ${senderInfo.firstName} into ${workspace.name}`,
+                workspaceId: workspaceId,
               },
             },
           },
@@ -1658,5 +1662,140 @@ export const getFlashCardCount = async (
   } catch (error) {
     console.error("Error fetching flashcard count:", error);
     throw new Error("Failed to fetch flashcard count");
+  }
+};
+
+export const createNotification = async (
+  content: string,
+  userId?: string,
+  workspaceId?: string
+) => {
+  try {
+    const notification = await db.notification.create({
+      data: {
+        content,
+        userId,
+        workspaceId,
+      },
+    });
+    return notification;
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    throw error;
+  }
+};
+
+export const getNotifications = async (workspaceId: string) => {
+  try {
+    const notifications = await db.notification.findMany({
+      where: {
+        workspaceId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return notifications;
+  } catch (error) {
+    console.error("Error getting notifications:", error);
+    throw error;
+  }
+};
+
+export const getLatestNotifications = async (
+  workspaceId: string,
+  limit: number = 5
+) => {
+  try {
+    const notifications = await db.notification.findMany({
+      where: {
+        workspaceId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+    });
+    return notifications;
+  } catch (error) {
+    console.error("Error getting latest notifications:", error);
+    throw error;
+  }
+};
+
+// actions/workspace.ts
+// export const deleteWorkspace = async (workspaceId: string) => {
+//   try {
+//     const authUser = await currentUser();
+//     if (!authUser) return { status: 404 };
+
+//     // First check if the user is the owner of the workspace
+//     const workspace = await db.workspace.findUnique({
+//       where: { id: workspaceId },
+//       select: { ownerId: true },
+//     });
+
+//     if (!workspace) return { status: 404 };
+
+//     const user = await db.user.findUnique({
+//       where: { clerkId: authUser.id },
+//     });
+
+//     if (!user) return { status: 404 };
+
+//     // Only the owner can delete the workspace
+//     if (workspace.ownerId !== user.id) {
+//       return { status: 403 };
+//     }
+
+//     // Delete the workspace
+//     await db.workspace.delete({
+//       where: { id: workspaceId },
+//     });
+
+//     return { status: 200 };
+//   } catch (error) {
+//     console.error("Error deleting workspace:", error);
+//     return { status: 500 };
+//   }
+// };
+
+// actions/workspace.ts
+export const deleteWorkspace = async (workspaceId: string) => {
+  try {
+    const authUser = await currentUser();
+    if (!authUser) return { status: 404 };
+
+    // Check if the user is the owner of the workspace
+    const workspace = await db.workspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        ownerId: true,
+        type: true,
+      },
+    });
+
+    if (!workspace) return { status: 404 };
+
+    const user = await db.user.findUnique({
+      where: { clerkId: authUser.id },
+    });
+
+    if (!user) return { status: 404 };
+
+    // Only allow deletion if the user is the owner and it's a PUBLIC workspace
+    if (workspace.ownerId !== user.id || workspace.type !== "PUBLIC") {
+      return { status: 403 };
+    }
+
+    // Delete the workspace
+    await db.workspace.delete({
+      where: { id: workspaceId },
+    });
+
+    return { status: 200 };
+  } catch (error) {
+    console.error("Error deleting workspace:", error);
+    return { status: 500 };
   }
 };

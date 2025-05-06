@@ -107,9 +107,20 @@ export function ResourceDetailsDialog({
   };
 
   // Handle download
-  const handleDownload = () => {
-    // In a real app, this would download the file
-    console.log(`Downloading ${resource.name}`);
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(resource.url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', resource.name);
+      document.body.appendChild(link);
+      link.click();
+      link?.parentNode?.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+    }
   };
 
   // Handle delete

@@ -96,7 +96,7 @@ export function WebsiteHero() {
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10 pointer-events-none" />
             <img 
-              src="/placeholder.svg?height=600&width=1200" 
+              src="https://media.istockphoto.com/id/1430404675/photo/neon-glowing-tube-bent-into-a-shape-of-light-bulb-and-brain-on-a-red-brick-wall-illustration.jpg?s=2048x2048&w=is&k=20&c=VJJWkTlcp8RCU6GP_mnbptFQNbynGMQ-IoyltRxmfGM=" 
               alt="StudyAI Dashboard" 
               className="w-full h-auto"
             />
