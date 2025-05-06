@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "DISABLE_ESLINT_PLUGIN=true next build",
+    "build": "node build.js",
+    "vercel-build": "node build.js",
     "start": "next start",
     "lint": "next lint"
   },

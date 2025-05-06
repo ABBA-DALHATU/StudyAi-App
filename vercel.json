@@ -1,6 +1,8 @@
 {
-  "buildCommand": "DISABLE_ESLINT_PLUGIN=true NEXT_DISABLE_ESLINT=1 next build",
-  "ignoreCommand": "eslint --quiet",
+  "buildCommand": "node build.js",
+  "ignoreCommand": "exit 0",
   "installCommand": "npm install",
-  "devCommand": "next dev"
+  "devCommand": "next dev",
+  "framework": "nextjs",
+  "outputDirectory": ".next"
 }
