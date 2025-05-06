@@ -1,8 +1,0 @@
-{
-  "buildCommand": "node build.js",
-  "ignoreCommand": "exit 0",
-  "installCommand": "npm install",
-  "devCommand": "next dev",
-  "framework": "nextjs",
-  "outputDirectory": ".next"
-}
