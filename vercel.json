@@ -14,7 +14,21 @@
       "dest": "/auth/callback",
       "headers": {
         "x-middleware-cache": "no-cache"
-      }
+      },
+      "continue": true
+    },
+    {
+      "src": "/auth(.*)",
+      "headers": {
+        "cache-control": "no-store, must-revalidate"
+      },
+      "continue": true
     }
-  ]
+  ],
+  "functions": {
+    "app/auth/callback/**/*": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
 }
